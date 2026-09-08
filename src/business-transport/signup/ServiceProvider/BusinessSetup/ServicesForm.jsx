@@ -1,10 +1,7 @@
 import { useState } from "react";
 import BusinessSetupLayout from "../BusinessSetupLayout";
 import { IoIosArrowBack } from "react-icons/io";
-import axios from "axios";
 
-// Services offered under Beauty & Personal Care. Extend this list as more
-// categories are added — key it by category id once there's more than one.
 const SERVICES_BY_CATEGORY = {
   beauty: [
     { id: "barbing", label: "Barbing" },
@@ -17,8 +14,7 @@ const SERVICES_BY_CATEGORY = {
 };
 
 export default function ServicesForm({ onBack, onNext, businessCategory }) {
-  // businessCategory is passed down as the full label (e.g. "Beauty & Personal Care").
-  const categoryId = "beauty"; // only category available for now
+  const categoryId = "beauty";
   const availableServices = SERVICES_BY_CATEGORY[categoryId] || [];
 
   const [selected, setSelected] = useState([]);
@@ -27,7 +23,6 @@ export default function ServicesForm({ onBack, onNext, businessCategory }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
-  const token = localStorage.getItem("token");
 
   const toggleService = (id) => {
     setSelected((prev) =>
@@ -47,21 +42,7 @@ export default function ServicesForm({ onBack, onNext, businessCategory }) {
 
     setSubmitting(true);
     try {
-      const payload = {
-        businessCategory,
-        services: selected,
-      };
-
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/businesses/services`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      );
-
+      
       if (response.status === 200 || response.status === 201) {
         setSuccessMessage("Services saved successfully!");
         onNext({ services: selected });
@@ -88,13 +69,6 @@ export default function ServicesForm({ onBack, onNext, businessCategory }) {
   return (
     <BusinessSetupLayout currentStep={2}>
       <div style={{ background: "#fff", minHeight: "100vh" }}>
-        <div
-          onClick={onBack}
-          className="flex items-center gap-2 w-fit cursor-pointer"
-        >
-          <IoIosArrowBack size={24} />
-          <h2 className="text-lg">Back</h2>
-        </div>
         <div className="w-full max-w-lg px-5 py-8">
           <h1 className="text-[20px] font-semibold text-[#231F20]">
             Services

@@ -10,6 +10,7 @@ import AddDriverForm from "./ServiceProvider/BusinessSetup/AddDriverForm";
 import IncomeSplitForm from "./ServiceProvider/BusinessSetup/IncomeSplitForm";
 import BusinessCongrats from "./BusinessCongrats";
 import BusinessVerification from "./ServiceProvider/BusinessSetup/BusinessVerification";
+import ServicesForm from "./ServiceProvider/BusinessSetup/ServicesForm";
 
 const BUSINESS_STEPS = {
   CONFIRM_KYC: 0,

@@ -4,9 +4,6 @@ import { ChevronDown, UploadCloud, X } from "lucide-react";
 import { Upload, FileCheck2 } from "lucide-react";
 import InputField from "../../../../components/InputField";
 import BusinessSetupLayout from "../BusinessSetupLayout";
-import api from "../../../../api/axios";
-import { IoIosArrowBack } from "react-icons/io";
-import { Link } from "react-router-dom";
 
 const CATEGORIES = [
   { id: "transport", label: "Transport & Logistics" },
@@ -115,35 +112,6 @@ export default function BusinessInfo({ onNext, onBack }) {
     return Object.keys(next).length === 0;
   };
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchBusinessData = async () => {
-      try {
-        const response = await api.get("/api/v1/businesses/business-details");
-        const data = response?.data?.data ?? response?.data ?? {};
-
-        if (!isMounted) return;
-
-        setForm((prev) => ({
-          ...prev,
-          businessName: data.businessName ?? prev.businessName,
-          cacNumber: data.cacNumber ?? prev.cacNumber,
-          address: data.address ?? prev.address,
-          city: data.city ?? prev.city,
-        }));
-      } catch (error) {
-        console.warn("Could not preload business details:", error);
-      }
-    };
-
-    fetchBusinessData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
   const handleSubmit = async () => {
     setErrorMessage("");
     setSuccessMessage("");
@@ -177,6 +145,7 @@ export default function BusinessInfo({ onNext, onBack }) {
         ninUrl: ninFile.url,
         businessCategory: categoryLabel,
       };
+      console.log(payload);
 
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/businesses/business-details`,
