@@ -9,6 +9,7 @@ import AddVehicleForm from "./ServiceProvider/BusinessSetup/AddVehicleForm";
 import AddDriverForm from "./ServiceProvider/BusinessSetup/AddDriverForm";
 import IncomeSplitForm from "./ServiceProvider/BusinessSetup/IncomeSplitForm";
 import BusinessCongrats from "./BusinessCongrats";
+import BusinessVerification from "./ServiceProvider/BusinessSetup/BusinessVerification";
 
 export default function BusinessForm() {
   const [step, setStep] = useState(0);
@@ -29,15 +30,21 @@ export default function BusinessForm() {
   };
   const handleBack = () => setStep((prev) => Math.max(prev - 1, 0));
 
+  const businessSetupStep =
+    formData.businessCategory === "Beauty & Personal Care" ? (
+      <ServicesForm onNext={handleNext} onBack={handleBack} />
+    ) : (
+      <AddVehicleForm onNext={handleNext} onBack={handleBack} />
+    );
+
   const forms = [
     <ConfirmKyc onNext={handleNext} />,
     <StepOne onNext={handleNext} email={formData.email} />,
     <StepTwo onNext={handleNext} email={formData.email} onBack={handleBack} />,
     <StepThree onNext={handleNext} onBack={handleBack} />,
     <BusinessInfo onNext={handleNext} onBack={handleBack} />,
-    <AddVehicleForm onNext={handleNext} onBack={handleBack} />,
-    // <AddDriverForm onNext={handleNext} onBack={handleBack} />,
-    // <IncomeSplitForm onNext={handleNext} onBack={handleBack} />,
+    <BusinessVerification onNext={handleNext} onBack={handleBack} />,
+    businessSetupStep,
     <BusinessCongrats onNext={handleNext} onBack={handleBack} />,
   ];
 

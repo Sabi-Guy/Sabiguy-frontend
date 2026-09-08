@@ -5,7 +5,8 @@ export default function BusinessSetupLayout({ currentStep, children }) {
   const steps = [
     "Account Type",
     "Business Info",
-    "Vehicle Setup",
+    "Business Verification",
+    "Business Setup",
     // "Add Driver",
     // "Income Split",
   ];
