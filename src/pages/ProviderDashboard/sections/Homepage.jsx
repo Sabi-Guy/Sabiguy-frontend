@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import ProviderDashboardLayout from "../../../components/layouts/ProviderDashboardLayout";
 import DashboardCard from "../../../components/dashboard/DashboardCard";
-import { Wallet, Bookmark, Star, CheckCircle } from "lucide-react";
+import { Wallet, Bookmark, Star, CheckCircle, MapPin } from "lucide-react";
 import RevenueOverview from "../../../components/provider-dashboard/RevenueOverview";
 import AverageResponseTime from "../../../components/provider-dashboard/AverageResponseTime";
 import PeakHourAnalysis from "../../../components/provider-dashboard/Analysis";
@@ -135,8 +135,9 @@ export default function ProviderDashboard() {
           <h2 className="text-lg font-semibold mb-1">
             Welcome Back, {user?.data?.fullName?.split(" ")[0]} 👋
           </h2>
-          <p className="text-sm text-gray-800 mb-1">
-            {isLoading ? "Location loading..." : location || "Location not set"}
+          <p className="text-sm text-[#005823] mb-1 flex items-center gap-1">
+              <MapPin size={16} /> 
+             {isLoading ? "Location loading..." : location || "Location not set"}
           </p>
           <p className="mb-2 text-sm">
             Here's a quick look at your business performance today.
