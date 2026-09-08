@@ -99,7 +99,9 @@ export default function ProviderDashboard() {
         try {
           const data = await updateProviderLocation({ latitude, longitude });
           const address = data?.data?.currentLocation?.address;
-          setLocation(address ?? null);
+          if (address) {
+            setLocation(address);
+          }
         } catch (error) {
           console.error("Error updating location:", error);
         }
@@ -136,8 +138,10 @@ export default function ProviderDashboard() {
             Welcome Back, {user?.data?.fullName?.split(" ")[0]} 👋
           </h2>
           <p className="text-sm text-[#005823] mb-1 flex items-center gap-1">
-              <MapPin size={16} /> 
-             {isLoading ? "Location loading..." : location || "Location not set"}
+            <MapPin size={16} />
+            {isLoading
+              ? "Location loading..."
+              : location || "Updating your location..."}
           </p>
           <p className="mb-2 text-sm">
             Here's a quick look at your business performance today.
