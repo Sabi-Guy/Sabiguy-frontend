@@ -7,8 +7,6 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import InputField from "../../../components/InputField";
 
-// TODO: UI-only until the business email-lookup endpoint is ready
-// (should work like the individual flow's /provider/kyc-level).
 export default function ConfirmKyc({ onNext }) {
   const [email, setEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -21,7 +19,7 @@ export default function ConfirmKyc({ onNext }) {
     }
     setErrorMessage("");
     localStorage.setItem("email", email.trim());
-    onNext?.({ email: email.trim() });
+    onNext?.({ kycLevel: 0, email: email.trim() });
   };
 
   return (

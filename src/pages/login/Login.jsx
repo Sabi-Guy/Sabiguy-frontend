@@ -132,6 +132,10 @@ const getProviderKycStatus = async (email) => {
   return "done";
 };
 
+const getBusinessKycStatus = async () => {
+  return "done";
+};
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function Login() {
@@ -188,6 +192,17 @@ export default function Login() {
     }
 
     if (userRole === "business") {
+      const kycStatus = await getBusinessKycStatus(email);
+
+      if (kycStatus === "incomplete") {
+        setRedirecting(true);
+        setErrorMessage(
+          "You are yet to complete your onboarding process. You will be redirected to where you stopped..."
+        );
+        setTimeout(() => navigate("/business-provider/signup"), 2000);
+        return;
+      }
+
       setRedirecting(true);
       navigate("/business-provider/dashboard", { replace: true });
       return;
