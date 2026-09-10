@@ -1,9 +1,11 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import axios from "axios";
 import { ChevronDown, UploadCloud, X } from "lucide-react";
-import { Upload, FileCheck2 } from "lucide-react";
 import InputField from "../../../../components/InputField";
 import BusinessSetupLayout from "../BusinessSetupLayout";
+
+const BUSINESS_DETAILS_ENDPOINT = "/businesses/business-details";
+const FILE_UPLOAD_CATEGORY = "identity_docs";
 
 const CATEGORIES = [
   { id: "transport", label: "Transport & Logistics" },
@@ -12,9 +14,6 @@ const CATEGORIES = [
 
 const MAX_FILE_SIZE_MB = 5;
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "application/pdf"];
-
-const token = localStorage.getItem("token");
-const email = localStorage.getItem("email");
 
 export default function BusinessInfo({ onNext, onBack }) {
   const [form, setForm] = useState({
@@ -44,11 +43,18 @@ export default function BusinessInfo({ onNext, onBack }) {
   };
 
   const uploadFile = async (file) => {
+    const token = localStorage.getItem("token");
+    const email = localStorage.getItem("email");
+
+    if (!token || !email) {
+      throw new Error("Your session has expired. Please sign in again.");
+    }
+
     const formData = new FormData();
     formData.append("file", file);
 
     const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/file/${email}/identity_docs`,
+      `${import.meta.env.VITE_BASE_URL}/file/${encodeURIComponent(email)}/${FILE_UPLOAD_CATEGORY}`,
       formData,
       {
         headers: {
@@ -58,7 +64,7 @@ export default function BusinessInfo({ onNext, onBack }) {
       },
     );
 
-    return response.data.file.url;
+    return response.data?.file?.url ?? response.data?.data?.file?.url;
   };
 
   const handleNinFile = async (fileList) => {
@@ -134,21 +140,29 @@ export default function BusinessInfo({ onNext, onBack }) {
 
     setSubmitting(true);
     try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        setErrorMessage(
+          "Your session has expired. Please sign in again and continue onboarding.",
+        );
+        return;
+      }
+
       const categoryLabel = CATEGORIES.find(
         (c) => c.id === form.category,
       )?.label;
 
       const payload = {
-        businessName: form.businessName,
-        businessAddress: form.address,
-        cityOfOperation: form.city,
+        businessName: form.businessName.trim(),
+        businessAddress: form.address.trim(),
+        cityOfOperation: form.city.trim(),
         ninUrl: ninFile.url,
         businessCategory: categoryLabel,
       };
-      console.log(payload);
 
       const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/businesses/business-details`,
+        `${import.meta.env.VITE_BASE_URL}${BUSINESS_DETAILS_ENDPOINT}`,
         payload,
         {
           headers: {
