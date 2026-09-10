@@ -1,23 +1,11 @@
-<<<<<<< HEAD
-import { useState, useRef } from "react";
-import { Upload, FileCheck2, X } from "lucide-react";
-import InputField from "../../../../components/InputField";
-import BusinessSetupLayout from "../BusinessSetupLayout";
-import { IoIosArrowBack } from "react-icons/io";
-import { Link } from "react-router-dom";
-import axios from "axios";
-
-const BUSINESS_DETAILS_ENDPOINT = "/businesses/business-details";
-const FILE_UPLOAD_CATEGORY = "certificates";
-const BUSINESS_CATEGORY = "Transport & Logistics";
-=======
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import axios from "axios";
 import { ChevronDown, UploadCloud, X } from "lucide-react";
-import { Upload, FileCheck2 } from "lucide-react";
 import InputField from "../../../../components/InputField";
 import BusinessSetupLayout from "../BusinessSetupLayout";
->>>>>>> 354a0395ed228f58cbe8d8d46e69f9c9202d8263
+
+const BUSINESS_DETAILS_ENDPOINT = "/businesses/business-details";
+const FILE_UPLOAD_CATEGORY = "identity_docs";
 
 const CATEGORIES = [
   { id: "transport", label: "Transport & Logistics" },
@@ -26,9 +14,6 @@ const CATEGORIES = [
 
 const MAX_FILE_SIZE_MB = 5;
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "application/pdf"];
-
-const token = localStorage.getItem("token");
-const email = localStorage.getItem("email");
 
 export default function BusinessInfo({ onNext, onBack }) {
   const [form, setForm] = useState({
@@ -58,11 +43,18 @@ export default function BusinessInfo({ onNext, onBack }) {
   };
 
   const uploadFile = async (file) => {
+    const token = localStorage.getItem("token");
+    const email = localStorage.getItem("email");
+
+    if (!token || !email) {
+      throw new Error("Your session has expired. Please sign in again.");
+    }
+
     const formData = new FormData();
     formData.append("file", file);
 
     const response = await axios.post(
-      `${import.meta.env.VITE_BASE_URL}/file/${email}/identity_docs`,
+      `${import.meta.env.VITE_BASE_URL}/file/${encodeURIComponent(email)}/${FILE_UPLOAD_CATEGORY}`,
       formData,
       {
         headers: {
@@ -72,7 +64,7 @@ export default function BusinessInfo({ onNext, onBack }) {
       },
     );
 
-    return response.data.file.url;
+    return response.data?.file?.url ?? response.data?.data?.file?.url;
   };
 
   const handleNinFile = async (fileList) => {
@@ -148,70 +140,30 @@ export default function BusinessInfo({ onNext, onBack }) {
 
     setSubmitting(true);
     try {
-<<<<<<< HEAD
       const token = localStorage.getItem("token");
-      const email = localStorage.getItem("email");
 
-      if (!token || !email) {
+      if (!token) {
         setErrorMessage(
           "Your session has expired. Please sign in again and continue onboarding.",
         );
         return;
       }
 
-      const uploadFile = async (selectedFile) => {
-        const uploadData = new FormData();
-        uploadData.append("file", selectedFile);
-
-        const response = await axios.post(
-          `${import.meta.env.VITE_BASE_URL}/file/${encodeURIComponent(email)}/${FILE_UPLOAD_CATEGORY}`,
-          uploadData,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
-
-        return response.data?.file?.url ?? response.data?.data?.file?.url;
-      };
-
-      const [cacCertificateUrl, ninUrl] = await Promise.all([
-        uploadFile(file),
-        uploadFile(ninFile),
-      ]);
-
-      if (!ninUrl) {
-        throw new Error("The NIN document upload did not return a URL.");
-      }
-
-      await axios.post(
-        `${import.meta.env.VITE_BASE_URL}${BUSINESS_DETAILS_ENDPOINT}`,
-        {
-          businessName: form.businessName.trim(),
-          businessAddress: form.address.trim(),
-          cityOfOperation: form.city.trim(),
-          ninUrl,
-          businessCategory: BUSINESS_CATEGORY,
-        },
-=======
       const categoryLabel = CATEGORIES.find(
         (c) => c.id === form.category,
       )?.label;
 
       const payload = {
-        businessName: form.businessName,
-        businessAddress: form.address,
-        cityOfOperation: form.city,
+        businessName: form.businessName.trim(),
+        businessAddress: form.address.trim(),
+        cityOfOperation: form.city.trim(),
         ninUrl: ninFile.url,
         businessCategory: categoryLabel,
       };
-      console.log(payload);
 
       const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/businesses/business-details`,
+        `${import.meta.env.VITE_BASE_URL}${BUSINESS_DETAILS_ENDPOINT}`,
         payload,
->>>>>>> 354a0395ed228f58cbe8d8d46e69f9c9202d8263
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -219,17 +171,6 @@ export default function BusinessInfo({ onNext, onBack }) {
         },
       );
 
-<<<<<<< HEAD
-      setSuccessMessage("Business information saved successfully!");
-      onNext({
-        ...form,
-        file,
-        ninFile,
-        cacCertificateUrl,
-        ninUrl,
-        businessCategory: BUSINESS_CATEGORY,
-      });
-=======
       if (response.status === 200 || response.status === 201) {
         setSuccessMessage("Business information saved successfully!");
         onNext({
@@ -243,7 +184,6 @@ export default function BusinessInfo({ onNext, onBack }) {
       } else {
         setErrorMessage("Something went wrong");
       }
->>>>>>> 354a0395ed228f58cbe8d8d46e69f9c9202d8263
     } catch (error) {
       console.error("BusinessInfo submit error:", error);
       if (error.response) {
