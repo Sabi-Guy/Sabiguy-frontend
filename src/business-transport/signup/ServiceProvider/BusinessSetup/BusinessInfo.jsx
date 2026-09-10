@@ -1,10 +1,14 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { Upload, FileCheck2, X } from "lucide-react";
 import InputField from "../../../../components/InputField";
 import BusinessSetupLayout from "../BusinessSetupLayout";
-import api from "../../../../api/axios";
 import { IoIosArrowBack } from "react-icons/io";
 import { Link } from "react-router-dom";
+import axios from "axios";
+
+const BUSINESS_DETAILS_ENDPOINT = "/businesses/business-details";
+const FILE_UPLOAD_CATEGORY = "certificates";
+const BUSINESS_CATEGORY = "Transport & Logistics";
 
 export default function BusinessInfo({ onNext }) {
   const [form, setForm] = useState({
@@ -67,35 +71,6 @@ export default function BusinessInfo({ onNext }) {
     return Object.keys(next).length === 0;
   };
 
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchBusinessData = async () => {
-      try {
-        const response = await api.get("/api/v1/businesses/business-details");
-        const data = response?.data?.data ?? response?.data ?? {};
-
-        if (!isMounted) return;
-
-        setForm((prev) => ({
-          ...prev,
-          businessName: data.businessName ?? prev.businessName,
-          cacNumber: data.cacNumber ?? prev.cacNumber,
-          address: data.address ?? prev.address,
-          city: data.city ?? prev.city,
-        }));
-      } catch (error) {
-        console.warn("Could not preload business details:", error);
-      }
-    };
-
-    fetchBusinessData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
   const handleSubmit = async () => {
     setErrorMessage("");
     setSuccessMessage("");
@@ -113,8 +88,67 @@ export default function BusinessInfo({ onNext }) {
 
     setSubmitting(true);
     try {
+      const token = localStorage.getItem("token");
+      const email = localStorage.getItem("email");
+
+      if (!token || !email) {
+        setErrorMessage(
+          "Your session has expired. Please sign in again and continue onboarding.",
+        );
+        return;
+      }
+
+      const uploadFile = async (selectedFile) => {
+        const uploadData = new FormData();
+        uploadData.append("file", selectedFile);
+
+        const response = await axios.post(
+          `${import.meta.env.VITE_BASE_URL}/file/${encodeURIComponent(email)}/${FILE_UPLOAD_CATEGORY}`,
+          uploadData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        return response.data?.file?.url ?? response.data?.data?.file?.url;
+      };
+
+      const [cacCertificateUrl, ninUrl] = await Promise.all([
+        uploadFile(file),
+        uploadFile(ninFile),
+      ]);
+
+      if (!ninUrl) {
+        throw new Error("The NIN document upload did not return a URL.");
+      }
+
+      await axios.post(
+        `${import.meta.env.VITE_BASE_URL}${BUSINESS_DETAILS_ENDPOINT}`,
+        {
+          businessName: form.businessName.trim(),
+          businessAddress: form.address.trim(),
+          cityOfOperation: form.city.trim(),
+          ninUrl,
+          businessCategory: BUSINESS_CATEGORY,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
       setSuccessMessage("Business information saved successfully!");
-      onNext({ ...form, file, ninFile });
+      onNext({
+        ...form,
+        file,
+        ninFile,
+        cacCertificateUrl,
+        ninUrl,
+        businessCategory: BUSINESS_CATEGORY,
+      });
     } catch (error) {
       console.error("BusinessInfo submit error:", error);
       if (error.response) {
